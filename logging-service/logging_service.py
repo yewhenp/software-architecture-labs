@@ -1,36 +1,31 @@
-import argparse
 import logging
+import subprocess
 
-from flask import Flask, make_response, jsonify, request
-from flask.views import MethodView
+import hazelcast
 
-logging_service_app = Flask(__name__)
-
-database = {}
-
-
-class LoggingServiceAPI(MethodView):
-    def get(self):
-        return make_response(jsonify(list(database.values())), 200)
-
-    def post(self):
-        body = request.get_json()
-        request_uuid = body.get("uuid", None)
-        request_msg = body.get("msg", None)
-        if request_uuid is None or request_msg is None:
-            make_response(jsonify({}), 400)
-        database[request_uuid] = request_msg
-        logging_service_app.logger.info(f"Got message: {request_uuid} - {request_msg}")
-        return make_response(jsonify(None), 200)
+hz_logger = logging.getLogger("hazelcast")
+hz_logger.setLevel(logging.WARNING)
 
 
-logging_service_app.add_url_rule("/logging_service", view_func=LoggingServiceAPI.as_view("logging_service"))
+class LoggingService:
+    hz = None
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Logging service")
-    parser.add_argument("--port", dest="port", default=8081, type=int)
-    args = parser.parse_args()
+    def __init__(self, logger):
+        self.logger = logger
+        self.client = hazelcast.HazelcastClient()
+        self.hazelcast_map = self.client.get_map("logging-service-map").blocking()
 
-    logging.basicConfig(level=logging.INFO)
+    def get_records(self):
+        return [value[1] for value in self.hazelcast_map.entry_set()]
 
-    logging_service_app.run(port=args.port)
+    def put_record(self, uuid, msg):
+        self.hazelcast_map.put(uuid, msg)
+        self.logger.logger.info(f"Got message: {uuid} - {msg}")
+
+    @staticmethod
+    def run_hz():
+        if LoggingService.hz is None:
+            LoggingService.hz = subprocess.Popen(["hz", "start"],
+                                                 stdout=subprocess.DEVNULL,
+                                                 stderr=subprocess.DEVNULL)
+

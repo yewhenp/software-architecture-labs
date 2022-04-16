@@ -16,7 +16,7 @@ messages_service_app.add_url_rule("/messages_service", view_func=MessagesService
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Messages service")
-    parser.add_argument("--port", dest="port", default=8082, type=int)
+    parser.add_argument("--port", dest="port", default=8081, type=int)
     args = parser.parse_args()
 
     messages_service_app.run(port=args.port)
