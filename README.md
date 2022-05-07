@@ -1,16 +1,20 @@
-## Starting 3 instances of logging seervice and sending 8 messages
+## Post request example
+![](./img/part4/post_request.png)
+
+## Console logs after 10 requests
 ### logging_service_1
-![](./img/part3/logging_service_1.png)
+![](./img/part4/logging_service_1.png)
 ### logging_service_2
-![](./img/part3/logging_service_2.png)
+![](./img/part4/logging_service_2.png)
 ### logging_service_3
-![](./img/part3/logging_service_3.png)
+![](./img/part4/logging_service_3.png)
+### messages_service_1
+![](./img/part4/messages_service_1.png)
+### messages_service_2
+![](./img/part4/messages_service_2.png)
 
-## Sending get request when all 3 nodes are alive
-![](./img/part3/getting_all_data_from_random.png)
-
-## Sending get request when 1 node is alive
-![](./img/part3/getting_all_data_after_2_nodes_shutdown.png)
-
-## Console of last live node (can be seen the disconnection of other)
-![](./img/part3/logging_service_last_live_node.png)
+## Get requests:
+### get_request_1
+![](./img/part4/get_request_1.png)
+### get_request_2
+![](./img/part4/get_request_2.png)

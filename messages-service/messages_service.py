@@ -1,22 +1,37 @@
-import argparse
+import logging
+import threading
+import time
 
-from flask import Flask, make_response, jsonify
-from flask.views import MethodView
+import hazelcast
 
-messages_service_app = Flask(__name__)
-
-
-class MessagesServiceAPI(MethodView):
-    def get(self):
-        return make_response(jsonify("messages service not implemented yet"), 200)
+hz_logger = logging.getLogger("hazelcast")
+hz_logger.setLevel(logging.WARNING)
 
 
-messages_service_app.add_url_rule("/messages_service", view_func=MessagesServiceAPI.as_view("messages_service"))
+class MessagesService:
+    client = None
+    hazelcast_queue = None
+    thread = None
+    entries = []
 
+    def __init__(self, logger):
+        self.logger = logger
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Messages service")
-    parser.add_argument("--port", dest="port", default=8081, type=int)
-    args = parser.parse_args()
+    @staticmethod
+    def get_records():
+        return MessagesService.entries
 
-    messages_service_app.run(port=args.port)
+    @staticmethod
+    def loop_records():
+        while 1:
+            msg = MessagesService.hazelcast_queue.take()
+            if msg:
+                MessagesService.entries.append(msg)
+                print(f"Got message: {msg}")
+
+    @staticmethod
+    def init_hz():
+        MessagesService.client = hazelcast.HazelcastClient()
+        MessagesService.hazelcast_queue = MessagesService.client.get_queue("messages-service-queue").blocking()
+        MessagesService.thread = threading.Thread(target=MessagesService.loop_records)
+        MessagesService.thread.start()
