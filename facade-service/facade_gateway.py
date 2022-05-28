@@ -1,8 +1,11 @@
 import argparse
+import os
+import sys
 
 from flask import Flask, make_response, jsonify, request
 from flask.views import MethodView
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from facade_service import FacadeService
 
 facade_service_app = Flask(__name__)
@@ -31,4 +34,5 @@ if __name__ == '__main__':
     parser.add_argument("--port", dest="port", default=8080, type=int)
     args = parser.parse_args()
 
+    FacadeService.register_in_consul(port=args.port)
     facade_service_app.run(port=args.port)

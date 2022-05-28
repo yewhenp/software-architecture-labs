@@ -1,9 +1,12 @@
 import argparse
 import logging
+import os
+import sys
 
 from flask import Flask, make_response, jsonify, request
 from flask.views import MethodView
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from logging_service import LoggingService
 
 logging_service_app = Flask(__name__)
@@ -35,5 +38,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
+    LoggingService.register_in_consul(port=args.port)
     LoggingService.run_hz()
     logging_service_app.run(port=args.port)

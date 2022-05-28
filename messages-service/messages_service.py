@@ -1,11 +1,10 @@
-import logging
 import threading
-import time
 
 import hazelcast
 
-hz_logger = logging.getLogger("hazelcast")
-hz_logger.setLevel(logging.WARNING)
+from common import get_queue, get_consul_and_register_service, suppress_hz_logs
+
+suppress_hz_logs()
 
 
 class MessagesService:
@@ -13,6 +12,11 @@ class MessagesService:
     hazelcast_queue = None
     thread = None
     entries = []
+    consul_inst = None
+
+    @staticmethod
+    def register_in_consul(port):
+        MessagesService.consul_inst = get_consul_and_register_service(port, "messages_service")
 
     def __init__(self, logger):
         self.logger = logger
@@ -32,6 +36,6 @@ class MessagesService:
     @staticmethod
     def init_hz():
         MessagesService.client = hazelcast.HazelcastClient()
-        MessagesService.hazelcast_queue = MessagesService.client.get_queue("messages-service-queue").blocking()
+        MessagesService.hazelcast_queue = get_queue(MessagesService.client, MessagesService.consul_inst)
         MessagesService.thread = threading.Thread(target=MessagesService.loop_records)
         MessagesService.thread.start()

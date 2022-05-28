@@ -1,9 +1,12 @@
 import argparse
 import logging
+import os
+import sys
 
 from flask import Flask, make_response, jsonify
 from flask.views import MethodView
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from messages_service import MessagesService
 
 messages_service_app = Flask(__name__)
@@ -26,5 +29,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
+    MessagesService.register_in_consul(port=args.port)
     MessagesService.init_hz()
     messages_service_app.run(port=args.port)
